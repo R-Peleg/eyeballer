@@ -210,21 +210,23 @@ class EyeballModel:
         result["parked"] = prediction[0][4]
         return result
 
-    def predict(self, path, threshold=0.5):
+    def predict(self, paths, threshold=0.5):
         """Predict the labels for a single file or directory of files
 
         Keyword arguments:
         path -- The path to the file(s) that we'll be evaluating.
         """
         # Is this a single file, or a directory?
+        if not isinstance(paths, list):
+            paths = [paths]
         screenshots = []
-        if os.path.isfile(path):
-            screenshots = [path]
-        elif os.path.isdir(path):
-            screenshots = os.listdir(path)
-            screenshots = [os.path.join(path, s) for s in screenshots]
-        else:
-            raise FileNotFoundError
+        for path in paths:
+            if os.path.isfile(path):
+                screenshots.append(path)
+            elif os.path.isdir(path):
+                screenshots += [os.path.join(path, f) for f in os.listdir(path)]
+            else:
+                raise FileNotFoundError(f'Path {path} does not exist')
 
         results = []
         bar = progressbar.ProgressBar()
